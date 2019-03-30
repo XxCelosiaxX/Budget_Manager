@@ -36,7 +36,14 @@ It will have to be changed to fit our parameters.
 
 Requirements:
     - Function should take in more information instead of just a username and password
-
+    - This one function should be able to update literally everything for the user.
+        Username
+        Password
+        First Name
+        Last Name
+        Email
+        Phone Number
+        Budget
  */
 router.post('/signup', function(req, res) {
     if (!req.body.username || !req.body.password) {
