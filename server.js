@@ -171,8 +171,9 @@ router.route('/trends')
 /*
 Reject all other requests that aren't listed above.
  */
+ /* Response code of 405 is used for method not allowed */
 router.all('*', function(req, res) {
-    res.json({error: 'Not supported HTTP method'});
+    res.status(405).send({success: false, error: 'Method nor allowed.'});
 });
 
 app.use('/', router);
