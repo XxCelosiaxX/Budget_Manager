@@ -51,9 +51,13 @@ router.post('/signup', function(req, res) {
     }
     else {
         var user = new User();
-        user.name = req.body.name;
         user.username = req.body.username;
         user.password = req.body.password;
+        user.first = req.body.name;
+        user.last = req.body.name;
+        user.age = req.body.age;
+        user.budget = req.body.budget;
+
         // save the user
         user.save(function(err) {
             if (err) {
@@ -79,11 +83,10 @@ Requirements:
  */
 router.post('/signin', function(req, res) {
     var userNew = new User();
-    userNew.name = req.body.name;
     userNew.username = req.body.username;
     userNew.password = req.body.password;
 
-    User.findOne({ username: userNew.username }).select('name username password').exec(function(err, user) {
+    User.findOne({ username: userNew.username }).select('username password').exec(function(err, user) {
         if (err) res.send(err);
 
         user.comparePassword(userNew.password, function(isMatch){
@@ -130,6 +133,30 @@ router.route('/users')
             Budget
     */
     .put(authJwtController.isAuthenticated, function (req, res) {
+        const usertoken = req.headers.authorization;
+        const token = usertoken.split(' ');
+        const decoded = jwt.verify(token[1], process.env.SECRET_KEY);
+
+        User.findOneAndUpdate({userid: decoded},
+            {
+                title: req.body.title,
+                year: req.body.year,
+                genre: req.body.genre,
+                actors: req.body.actors
+
+            }, function (err, found) {
+                if (found) {
+                    res.json({message: "Entry Updated"});
+                } else {
+                    res.json({message: "Entry not found"});
+                }
+
+            });
+    }
+else{
+    res.json({message: "Please check that your fields are not null, and that you have at least 3 actors"});
+}
+
 
     })
 
@@ -141,6 +168,21 @@ router.route('/users')
         - Function needs to grab the users profile data from the users database and send it back in JSON.
     */
     .get(authJwtController.isAuthenticated, function (req, res) {
+        const usertoken = req.headers.authorization;
+        const token = usertoken.split(' ');
+        const decoded = jwt.verify(token[1], process.env.SECRET_KEY);
+
+        User.findById(decoded, function (err,user) {
+            if(err)
+            {
+                res.json({message: "Invalid query"});
+            }
+            if(user)
+            {
+                res.json({message: "User Info:", user:user});
+            }
+
+        })
 
     })
 
@@ -150,9 +192,23 @@ router.route('/users')
     Requirements:
         - DELETE THE PROFILE. This should take like ten seconds to write...
     */
-    .delete(authJwtController.isAuthenticated, function(req,res) {
+    .delete(authJwtController.isAuthenticated, function (req, res) {
+        User.findOneAndDelete({user: req.body.username}, function(err, found)
+        {
+            if(err){
+                res.json({message: "Invalid query"});
+            }
+            if(found){
+                res.json({message: "Your account has been deleted"});
+            }
+            else{
+                res.json({message: "Username not found"});
+            }
 
-    });
+        });
+    }
+)
+
 
 
 /*
